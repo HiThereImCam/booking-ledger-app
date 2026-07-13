@@ -6,7 +6,7 @@ class GuestSerializer(serializers.ModelSerializer):
         model: Guest
         fields=['id,name, wallet_balance']
 
-class PropertySerializer(serializers.PropertySerializer):
+class PropertySerializer(serializers.ModelSerializer):
     class Meta: 
         model: Property
         fields=['id, name,is_booked,booked_by']
