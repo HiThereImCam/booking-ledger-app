@@ -1,7 +1,7 @@
 import logging
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.response import responses
+from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from .serializers import PropertySerializer, GuestSerializer
 from .models import Property, Guest
@@ -19,8 +19,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'],url_path="book_property")
     def book_property(self, request, pk=None):
         property = self.get_object()
-        logger.warning(f"{property.name}")
-     
+
         if property.is_booked:
             raise ValidationError({
                 "error": "Property is already booked"
@@ -40,7 +39,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
             })
 
         if guest.wallet_balance >= property.nightly_rate:
-            guest.wallet_balance -= property.night_rate
+            guest.wallet_balance -= property.nightly_rate
             guest.save(update_fields=['wallet_balance'])
 
             property.is_booked = True
@@ -51,6 +50,27 @@ class PropertyViewSet(viewsets.ModelViewSet):
             raise ValidationError({
                 "error": "Insufficient Funds"
             })
+        serializer = self.get_serializer(property)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+    # cancel reservation and deposit money back into guests wallet
+    @action(detail=True, methods=['post'], url_path="cancel_booking")
+    def cancel_booking(self, request, pk=None):
+        property = self.get_object()
+
+        if not property.is_booked:
+            raise ValidationError({
+                "error": "Property is not booked"
+            })
+
+        guest = property.booked_by
+        property.is_booked = False
+        property.booked_by = None
+        guest.wallet_balance += property.nightly_rate
+
+        property.save(update_fields=["is_booked", "booked_by"])
+        guest.save(update_fields=["wallet_balance"])
+
         serializer = self.get_serializer(property)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
