@@ -20,6 +20,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def book_property(self, request, pk=None):
         property = self.get_object()
 
+        print("request: ", dir(request))
+        print("self: ", dir(self))
+
         if property.is_booked:
             raise ValidationError({
                 "error": "Property is already booked"
@@ -73,6 +76,22 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(property)
         return Response(serializer.data,status=status.HTTP_200_OK)
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        property_param = self.request.query_params.get('name', None)
+        sort_param = self.request.query_params.get('sort', None)
+        price_param = self.request.query_params.get('price', None)
+
+        if property_param is not None:
+            queryset = queryset.filter(name=property_param)
+
+        if sort_param == 'asc':
+            queryset = queryset.order_by('name')
+        if sort_param == 'desc':
+            queryset = queryset.order_by('-name')
+        
+        return queryset
 
 class GuestViewSet(viewsets.ModelViewSet):
         # grab all objects in table
