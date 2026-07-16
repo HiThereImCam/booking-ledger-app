@@ -20,9 +20,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def book_property(self, request, pk=None):
         property = self.get_object()
 
-        print("request: ", dir(request))
-        print("self: ", dir(self))
-
         if property.is_booked:
             raise ValidationError({
                 "error": "Property is already booked"
