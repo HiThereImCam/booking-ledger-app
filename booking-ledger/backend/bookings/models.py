@@ -10,3 +10,4 @@ class Property(models.Models):
     nightly_rate = models.DecimalField(max_digits=15, decimal_places=2)
     is_booked = models.BooleanField(default=False)
     booked_by = models.ForeignKey(Guest, on_delete=models.SET_NULL, null=True, blank=True)
+ 
